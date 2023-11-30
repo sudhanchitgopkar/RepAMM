@@ -2,7 +2,7 @@ package infra;
 
 import java.util.Random;
 
-class Agent {
+public class Agent {
     protected double rep, belief;
     protected double budget;
     protected int participations, opportunities, correctPreds;
