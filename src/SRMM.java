@@ -50,12 +50,42 @@ public class SRMM extends AMM {
 	return price/sum;
     } //getPrice
 
+    /**
+       Returns the quantity of contract `outcome` bought by agent a till its price becomes `price`
+       @param a the purchasing agent
+       @param outcome the index of the outcome to purchase in state
+       @param the price of the outcome after the purchase
+       @return the quantity of contract `outcome` bought
+     */
     public double buyTillPrice(Agent a, int outcome, double price) {
-	//ToDo
-	return 1d;
+	double qty = 0;
+	
+	for (int i = 0; i < state.length; i++) {
+	    if (i != outcome) {
+		qty += price * Math.exp(state[i]/BETA);
+	    } //if
+	} //for
+	qty /= (1 - price);
+	qty -= state[outcome];
+	
+	this.buy(a, qty, outcome);
+
+	return qty;
     } //buyTillPrice
     
     public double sellTillPrice(Agent a, int outcome, double price) {
-	return buyTillPrice(a, outcome, price);
+	double qty = 0;
+	
+	for (int i = 0; i < state.length; i++) {
+	    if (i != outcome) {
+		qty += price * Math.exp(state[i]/BETA);
+	    } //if
+	} //for
+	qty /= (1 - price);
+	qty = state[outcome] - qty;
+	
+	this.buy(a, qty, outcome);
+
+	return qty;
     } //sellTillPrice
 } //SRMM
