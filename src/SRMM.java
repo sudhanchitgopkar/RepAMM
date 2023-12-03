@@ -1,0 +1,60 @@
+package mm;
+
+import mm.AMM;
+import java.lang.Math.exp;
+import java.lang.Math.log;
+import java.lang.Math.abs;
+
+public class SRMM extends AMM {
+    private double [] state;
+    private final BETA = 1;
+
+    public SRMM(int numOutcomes) {
+	state = new double [numOutcomes];
+	for (int i = 0; i < numOutcomes; i++) {
+	    state[i] = 1/(numOutcomes * 1.0);
+	} //for
+    } //SRMM
+
+    public double buy(Agent buyer, double amt, int outcome) {
+	double currState = 0;
+	double buyState = 0;
+
+	for (int i = 0; i < state.length; i++) {
+	    currState += Math.exp(state[i]);
+	} //for
+	
+	//update market state
+	state[outcome] += amt;
+	
+	//can optimize this buy subtracting old outcome + add new outcome
+	for (int i = 0; i < state.length; i++) {
+	    buyState += Math.exp(state[i]);
+	} //for
+	
+	return Math.log(buyState) - Math.log(currState);
+    } //buy
+
+    public double sell(Agent seller, double amt, int outcome) {
+	return buy(seller, -1 * amt, outcome);
+    } //sell
+
+    public double getPrice(int outcome) {
+	double price = Math.exp(state[outcome]/BETA);
+	double sum = 0;
+
+	for (int i = 0; i < state.length; i++) {
+	    sum += Math.exp(state[i]/BETA);
+	} //for
+
+	return price/sum;
+    } //getPrice
+
+    public double buyTillPrice(Agent a, int outcome, double price) {
+	//ToDo
+    } //buyTillPrice
+    
+    public double sellTillPrice(Agent a, int outcome, double price) {
+	return buyTillPrice(a, outcome, price)
+    } //sellTillPrice
+} //SRMM
