@@ -1,13 +1,13 @@
 package mm;
 
+import infra.Agent;
 import mm.AMM;
-import java.lang.Math.exp;
-import java.lang.Math.log;
-import java.lang.Math.abs;
+import java.lang.Math.*;
+
 
 public class SRMM extends AMM {
     private double [] state;
-    private final BETA = 1;
+    private final double BETA = 1;
 
     public SRMM(int numOutcomes) {
 	state = new double [numOutcomes];
@@ -52,9 +52,10 @@ public class SRMM extends AMM {
 
     public double buyTillPrice(Agent a, int outcome, double price) {
 	//ToDo
+	return 1d;
     } //buyTillPrice
     
     public double sellTillPrice(Agent a, int outcome, double price) {
-	return buyTillPrice(a, outcome, price)
+	return buyTillPrice(a, outcome, price);
     } //sellTillPrice
 } //SRMM
