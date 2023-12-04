@@ -21,44 +21,56 @@ public class SRMM extends AMM {
 	    state[i] = 1/(numOutcomes * 1.0);
 	} //for
     } //SRMM
-    
-    /**
+
+	/**
+	 *  Returns the cost  (positive if buying, negative
+	 *  if selling) to trade a given amount of a contract.
+	 *
+	 * @param outcome  the contract to buy
+	 * @param amt  the amount being traded (neg if selling)
+	 * @return cost
+	 */
+	public double trade_cost(int outcome, double amt) {
+		double current_C = 0;
+		double new_C = 0;
+
+		for (int i = 0; i < state.length; ++i) {
+			current_C += Math.exp(state[i] / BETA);
+			if (i == outcome) {
+				new_C += Math.exp((state[i] + amt) / BETA);
+			} else {
+				new_C += Math.exp(state[i] / BETA);
+			}
+		}
+
+		current_C = BETA * Math.log(current_C);
+		new_C = BETA * Math.log(new_C);
+
+		return new_C - current_C;
+	}
+
+	/**
        Facilitates an agent buying some amount of contracts on some outcome.
        Deducts the payment from the buyer, if valid, and changes the market state.
        Does nothing if the call is invalid.
 
        @param buyer the agent buying the contracts
        @param amt the amount of contracts being bought
-       @param the outcome the buyer is buying contracts for
+       @param outcome the buyer is buying contracts for
        @return whether the operation was valid (buyer had enough money for purchase)
      */
-    public boolean buy(Agent buyer, double amt, int outcome) {
-	double currState = 0;
-	double buyState = 0;
+	public boolean buy(Agent buyer, double amt, int outcome) {
+		double price = trade_cost(outcome, amt);
 
-	for (int i = 0; i < state.length; i++) {
-	    currState += Math.exp(state[i]);
-	} //for
-	
-	//update market state
-	state[outcome] += amt;
-	
-	//can optimize this buy subtracting old outcome + add new outcome
-	for (int i = 0; i < state.length; i++) {
-	    buyState += Math.exp(state[i]);
-	} //for
-	
-	double price = Math.log(buyState) - Math.log(currState);
-	
-	if (price > buyer.getBudget()) {
-	    //reset state
-	    state[outcome] -= amt;
-	    return false;
-	} else {
-	    buyer.subMoney(price);
-	    buyer.addHoldings(amt);
-	    return true;
-	} //if
+		if (price > buyer.getBudget()) {
+			//reset state
+			state[outcome] -= amt;
+			return false;
+		} else {
+			buyer.subMoney(price);
+			buyer.addHoldings(amt);
+			return true;
+		} //if
     } //buy
     
     /**
@@ -66,38 +78,23 @@ public class SRMM extends AMM {
        Gives some payment to the buyer, if valid, and changes the market state.
        Does nothing if the call is invalid.
 
-       @param buyer the agent selling the contracts
+       @param seller the agent selling the contracts
        @param amt the amount of contracts being sold
-       @param the outcome the seller is selling contracts for
+       @param outcome the seller is selling contracts for
        @return whether the operation was valid (seller has the contracts they intend to sell)
      */
 
     public boolean sell(Agent seller, double amt, int outcome) {
-	if (seller.getHoldings() < amt) {
-	    return false;
-	} //if
+		if (seller.getHoldings() < amt) {
+			return false;
+		} //if
 
-	amt *= -1;
-	double currState = 0;
-	double buyState = 0;
+		amt *= -1;
+		double price = trade_cost(outcome, amt);
 
-	for (int i = 0; i < state.length; i++) {
-	    currState += Math.exp(state[i]);
-	} //for
-	
-	//update market state
-	state[outcome] += amt;
-	
-	//can optimize this buy subtracting old outcome + add new outcome
-	for (int i = 0; i < state.length; i++) {
-	    buyState += Math.exp(state[i]);
-	} //for
-	
-	double price = Math.log(buyState) - Math.log(currState);
-	
-	seller.addMoney(price);
-	seller.subHoldings(amt);
-	return true;
+		seller.addMoney(price);
+		seller.subHoldings(amt);
+		return true;
     } //sell
     
     /**
@@ -107,14 +104,14 @@ public class SRMM extends AMM {
        @return the price of the contract of the outcome
      */
     public double getPrice(int outcome) {
-	double price = Math.exp(state[outcome]/BETA);
-	double sum = 0;
+		double price = Math.exp(state[outcome]/BETA);
+		double sum = 0;
 
-	for (int i = 0; i < state.length; i++) {
-	    sum += Math.exp(state[i]/BETA);
-	} //for
+		for (int i = 0; i < state.length; i++) {
+			sum += Math.exp(state[i]/BETA);
+		} //for
 
-	return price/sum;
+		return price/sum;
     } //getPrice
 
     /**
@@ -122,33 +119,48 @@ public class SRMM extends AMM {
        
        @param a the purchasing agent
        @param outcome the index of the outcome to purchase in state
-       @param the price of the outcome after the purchase
+       @param price of the outcome after the purchase
        @return the quantity of contract `outcome` bought
      */
     public double buyTillPrice(Agent a, int outcome, double price) {
-	double qty = 0;
-	
-	for (int i = 0; i < state.length; i++) {
-	    if (i != outcome) {
-		qty += price * Math.exp(state[i]/BETA);
-	    } //if
-	} //for
-	qty /= (1 - price);
-	qty -= state[outcome];
-	
-	if (!this.buy(a, qty, outcome)) {
-	    //ToDo: buy as much as budget allows
-	} //if
+		// buy a contract until the price reaches "price", given the budget
+		// of the agent
+		double Sigma = 0;
+		for (int i = 0; i < state.length; ++i) {
+			if (i == outcome) continue;
+			Sigma += Math.exp(state[i] / BETA);
+		}
+		double max_buy = BETA * Math.log(price * Sigma / (1 - price)) - state[outcome];
 
-	return qty;
+		double cost = trade_cost(outcome, max_buy);
+
+		if (cost > a.getBudget()) {
+			// only buy as much as they can afford
+			return contracts_for_cost(outcome, a.getBudget());
+		} else {
+			return max_buy;
+		}
+
     } //buyTillPrice
+
+	/**
+	 * Returns the amount of contracts that can be bought for a certain price.
+	 *
+	 * @param outcome - the contract being bought
+	 * @param cost - the cash offered by the agent
+	 * @return the amount of contract bought
+	 */
+	public double contracts_for_cost(int outcome, double cost) {
+		// TODO - recheck math on this lol
+		return 0;
+	}
 
     /**
        Returns the quantity of contract `outcome` bought by agent a till its price becomes `price`.
        
        @param a the purchasing agent
        @param outcome the index of the outcome to purchase in state
-       @param the price of the outcome after the purchase
+       @param price of the outcome after the purchase
        @return the quantity of contract `outcome` bought
      */    
     public double sellTillPrice(Agent a, int outcome, double price) {
