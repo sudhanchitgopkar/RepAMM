@@ -88,8 +88,16 @@ public class Agent {
     public double getBudget() {
 	return budget;
     } //getBudget
+    
+    /**
+       Getter for agent's belief.
 
-
+       @return agent's belief
+     */
+    public double getBelief() {
+	return belief;
+    } //getBelief
+    
     /**
        Setter for agent's budget.
 
