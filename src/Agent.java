@@ -1,14 +1,18 @@
 package infra;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 public class Agent {
     protected double rep, belief, budget;
-    protected int participations, opportunities, correctPreds;
+    protected int participations;
+    protected int opportunities;
+    protected ArrayList<Integer> correctPreds;
     protected double [] holdings;
 
     private final double CORRECTNESS_WEIGHT = 0.8;
     private final double REP_CAP = 0.8;
+    private final int LAST_N_MATCHES = 10; // matches to include in a rolling window
     private Random rand = new Random();
     private int id;
     
@@ -29,7 +33,14 @@ public class Agent {
 	this.id = id;
 	this.participations = p;
 	this.opportunities = o;
-	this.correctPreds = c;
+	this.correctPreds = new ArrayList<Integer>();
+
+    for (int i = 0; i < c; ++i) {
+        this.correctPreds.add(1);
+    }
+    for (int i = 0; i < c - this.LAST_N_MATCHES; ++i) {
+        this.correctPreds.add(0);
+    }
 
 	this.rep = calcRep();
 	this.belief = calcBelief(outcome);
@@ -55,7 +66,8 @@ public class Agent {
 	this.id = id;
 	this.participations = 0;
 	this.opportunities = 0;
-	this.correctPreds = 0;
+	this.correctPreds = new ArrayList<Integer>();
+
 
 	this.rep = 0;
 	this.belief = calcBelief(outcome);
@@ -69,6 +81,17 @@ public class Agent {
     } //Agent
 
     /**
+     * Sigmoid helper function for belief calculation:
+     * sig(x)  = 1 / (1 + exp(-x))
+     *
+     * @param x real number.
+     * @return sig(x)
+     */
+    private double sigmoid(double x) {
+        return 1.0 / (1.0 + Math.exp(-x));
+    }
+
+    /**
        Calculates an agent's reputation.
        Reputation is a weighted combination of correctPreds + opportunities taken.
        Players start with 0 reputation and cannot have negative participation.
@@ -76,9 +99,11 @@ public class Agent {
        @return agent's reputation
     */
     private double calcRep() {
-	double rep = CORRECTNESS_WEIGHT * (correctPreds * 1.0)/participations;
-	rep += (1 - CORRECTNESS_WEIGHT) * (participations * 1.0)/opportunities;
-	return rep;
+        if (participations == 0) return 0;
+        double sig = sigmoid(Math.min(participations, LAST_N_MATCHES));
+        int num_correct = correctPreds.subList(0,LAST_N_MATCHES)
+                .stream().mapToInt(Integer::intValue).sum();
+        return sig * num_correct / Math.min(participations, LAST_N_MATCHES);
     } //private
     
     /**
@@ -154,7 +179,7 @@ public class Agent {
        Setter for agent's holdings.
 
        @param amt amount of contracts to add to agent's holdings
-       @param the outcome to add holdings to
+       @param outcome to add holdings to
      */
     public void addHoldings(double amt, int outcome) {
 	holdings[outcome] += amt;
