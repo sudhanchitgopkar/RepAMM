@@ -5,11 +5,12 @@ import java.util.Random;
 public class Agent {
     protected double rep, belief, budget;
     protected int participations, opportunities, correctPreds;
-    protected double holdings;
+    protected double [] holdings;
 
     private final double CORRECTNESS_WEIGHT = 0.8;
     private final double REP_CAP = 0.8;
     private Random rand = new Random();
+    private int id;
     
     /**
        Initializes a new Agent with some reputation and belief.
@@ -19,11 +20,13 @@ public class Agent {
        @param o number of prediction markets agent *could have* participated in
        @param c number of correct predictions made by the agent
        @param outcome correct outcome of current market
+       @param numOutcomes number of possible outcomes for the market
        @param budget amount of money agent has to play with
        
        @return Agent object
      */
-    public Agent(int p, int o, int c, int outcome, double budget) {
+    public Agent(int id, int p, int o, int c, int outcome, int numOutcomes, double budget) {
+	this.id = id;
 	this.participations = p;
 	this.opportunities = o;
 	this.correctPreds = c;
@@ -32,18 +35,24 @@ public class Agent {
 	this.belief = calcBelief(outcome);
 
 	this.budget = budget;
-	holdings = 0;
+	
+	this.holdings = new double[numOutcomes];
+	for (int i = 0; i < numOutcomes; i++) {
+	    holdings[i] = 0;
+	} //for
     } //Agent
     
     /**
        Initializes a new Agent with no reputation and random belief.
     
        @param outcome correct outcome of current market
+       @param numOutcomes number of possible outcomes for the market
        @param budget amount of money agent has to play with
        
        @return Agent object
      */
-    public Agent(int outcome, int numOutcomes, double budget) {
+    public Agent(int id, int outcome, int numOutcomes, double budget) {
+	this.id = id;
 	this.participations = 0;
 	this.opportunities = 0;
 	this.correctPreds = 0;
@@ -52,7 +61,11 @@ public class Agent {
 	this.belief = calcBelief(outcome);
 
 	this.budget = budget;
-	holdings = 0;
+
+	this.holdings = new double[numOutcomes];
+	for (int i = 0; i < numOutcomes; i++) {
+	    holdings[i] = 0;
+	} //for
     } //Agent
 
     /**
@@ -124,25 +137,57 @@ public class Agent {
        
        @return number of contracts on outcome happening the agent holds
      */
-    public double getHoldings() {
+    public double [] getHoldings() {
 	return holdings;
+    } //getHolding
+    
+    /**
+       Returns the number of contracts of a certain outcome the agent has
+       
+       @param outcome the outcome to get number of contracts held for
+       @return the number of contracts of outcome held
+     */
+    public double getHolding(int outcome) {
+	return holdings[outcome];
     } //getHolding
     
     /**
        Setter for agent's holdings.
 
        @param amt amount of contracts to add to agent's holdings
+       @param the outcome to add holdings to
      */
-    public void addHoldings(double amt) {
-	holdings += amt;
+    public void addHoldings(double amt, int outcome) {
+	holdings[outcome] += amt;
     } //addHoldings
 
     /**
        Setter for agent's holdings.
        
        @param amt amount of contracts to remove from agent's holdings
+       @param outcome the outcome to remove holdings from
      */
-    public void subHoldings(double amt) {
-	holdings -= amt;
+    public void subHoldings(double amt, int outcome) {
+	holdings[outcome] -= amt;
     } //subHoldings
+    
+    /**
+       Getter for Agent's ID.
+       
+       @return agent's ID
+     */
+    public int getID() {
+	return id;
+    } //getID
+
+    @Override
+    public String toString() {
+	String s = "ID: " + id;
+	s += "\tREP: " + rep + "\n";
+	s += "\tBELIEF: " + belief + "\n";
+	s += "\tHOLDINGS: (" + holdings[0] + "," + holdings[1] + ")" + "\n";
+	s += "\tBUDGET: " + budget + "\n";
+
+	return s;
+    } //toString
 } //Agent
