@@ -11,7 +11,7 @@ public class Agent {
     protected double [] holdings;
 
     private final double CORRECTNESS_WEIGHT = 0.8;
-    private final double REP_CAP = 0.8;
+    private final double REP_CAP = 1.0;
     private final int LAST_N_MATCHES = 10; // matches to include in a rolling window
     private Random rand = new Random();
     private int id;
@@ -67,7 +67,6 @@ public class Agent {
 	this.participations = 0;
 	this.opportunities = 0;
 	this.correctPreds = new ArrayList<Integer>();
-
 
 	this.rep = 0;
 	this.belief = calcBelief(outcome);
