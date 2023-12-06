@@ -8,7 +8,8 @@ import java.lang.Math.*;
 public class SRMM extends AMM {
     private double [] state;
     private final double BETA = 1;
-    
+    private final boolean LOG = true;
+
     /**
        Initializes a new SRMM with equal probability across all outcomes.
 
@@ -17,9 +18,13 @@ public class SRMM extends AMM {
      */
     public SRMM(int numOutcomes) {
 	state = new double [numOutcomes];
-	for (int i = 0; i < numOutcomes; i++) {
-	    state[i] = 1/(numOutcomes * 1.0);
-	} //for
+	if (numOutcomes == 1) {
+	    state[0] = 0;
+	} else {
+	    for (int i = 0; i < numOutcomes; i++) {
+		state[i] = 1/(numOutcomes * 1.0);
+	    } //for
+	} //if
     } //SRMM
     
     /**
@@ -53,10 +58,13 @@ public class SRMM extends AMM {
 	if (price > buyer.getBudget()) {
 	    //reset state
 	    state[outcome] -= amt;
+	    if (LOG) System.out.println("AGENT " + buyer.getID() + " FAILED TO BUY " + amt + 
+					" CONTRACTS FOR " + price + " (AGENT BUDGET: " + buyer.getBudget() + ")");
 	    return false;
 	} else {
 	    buyer.subMoney(price);
-	    buyer.addHoldings(amt);
+	    buyer.addHoldings(amt, outcome);
+	    if (LOG) System.out.println("AGENT " + buyer.getID() + " BOUGHT " + amt + " CONTRACTS FOR " + price);
 	    return true;
 	} //if
     } //buy
@@ -73,7 +81,9 @@ public class SRMM extends AMM {
      */
 
     public boolean sell(Agent seller, double amt, int outcome) {
-	if (seller.getHoldings() < amt) {
+	if (LOG) System.out.println("INITIATED SELL ON OUTCOME " + outcome + " OF " + amt + " CONTRACTS BY " + seller.getID());
+	if (seller.getHolding(outcome) < amt) {
+	    if (LOG) System.out.println("AGENT " + seller.getID() + " FAILED TO SELL " + amt + " (ONLY HAS " + seller.getHoldings() + ")");
 	    return false;
 	} //if
 
@@ -96,7 +106,8 @@ public class SRMM extends AMM {
 	double price = Math.log(buyState) - Math.log(currState);
 	
 	seller.addMoney(price);
-	seller.subHoldings(amt);
+	seller.subHoldings(amt, outcome);
+	if (LOG) System.out.println("AGENT " + seller.getID() + " SOLD " + amt + " CONTRACTS FOR " + price);
 	return true;
     } //sell
     
@@ -125,7 +136,7 @@ public class SRMM extends AMM {
        @param the price of the outcome after the purchase
        @return the quantity of contract `outcome` bought
      */
-    public double buyTillPrice(Agent a, int outcome, double price) {
+    public double buyTillPrice(Agent a, int outcome, double price) throws Exception {
 	double qty = 0;
 	
 	for (int i = 0; i < state.length; i++) {
@@ -137,7 +148,14 @@ public class SRMM extends AMM {
 	qty -= state[outcome];
 	
 	if (!this.buy(a, qty, outcome)) {
-	    //ToDo: buy as much as budget allows
+	    //Buy as much as possible with remaining budget. Specifically for binary outcome!
+	    double x = Math.exp((price/BETA) + (state[outcome]/BETA));
+	    double y = Math.exp((price/BETA) + (state[outcome == 0 ? 1 : 0]/BETA));
+	    double z = Math.exp(state[outcome == 0 ? 1 : 0]/BETA);
+	    qty = BETA * Math.log(x + y + z) - state[outcome];
+	    if (!buy(a, qty, outcome)) {
+		throw new Exception("BUY TILL PRICE FALLBACK ERROR, TRIED TO BUY " + qty + " CONTRACTS");
+	    } //if
 	} //if
 
 	return qty;
@@ -163,9 +181,18 @@ public class SRMM extends AMM {
 	qty /= (1 - price);
 	qty = state[outcome] - qty;
 	
-	//if we don't have qty amount, sell all that we can
-	this.sell(a, Math.min(qty, a.getHoldings()), outcome);
+	if (qty < 0) return qty;
 
+	//if we don't have qty amount, sell all that we can
+	this.sell(a, Math.min(qty, a.getHolding(outcome)), outcome);
+    
 	return qty;
     } //sellTillPrice
+
+    @Override
+    public String toString() {
+	String s = "CONTRACTS SOLD: (" + state[0] + "," + state[1] + ")\n";
+	s += "CONTRACT PRICES: (" + getPrice(0) + "," + getPrice(1) + ")";
+	return s;
+    } //toString
 } //SRMM
