@@ -11,7 +11,7 @@ public class Sim {
     private final long SEED = 4092002;
     private Random rand = new Random(SEED);
     private final int NUM_OUTCOMES = 2;
-    private final int OUTCOME = rand.nextInt(2);
+    private final int OUTCOME = rand.nextInt(2); //returns int 0 or 1
     private final int N = 2; //number of agents
     private final int ROUNDS = 2;
     private final boolean LOG = true;
@@ -26,6 +26,7 @@ public class Sim {
 	agents  = new Agent [N];
 	for (int i = 0; i < N; i++) {
 	    agents[i] = new Agent(i, OUTCOME, NUM_OUTCOMES, 5);
+	    //agents[i] new Agent(i, 10, 10, 10, OUTCOME, NUM_OUTCOMES, 5);
 	} //for
 
 	if (LOG) System.out.println("MADE NEW SIM:\nNum Outcomes: " + NUM_OUTCOMES + 
