@@ -151,7 +151,7 @@ public class Agent {
        @return agent's reputation
      */
     public double getRep() {
-
+	return rep;
     } //getRep
 
     /**
