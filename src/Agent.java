@@ -144,6 +144,16 @@ public class Agent {
 	return belief;
     } //getBelief
     
+    
+    /**
+       Getter for agent's reputation.
+
+       @return agent's reputation
+     */
+    public double getRep() {
+
+    } //getRep
+
     /**
        Setter for agent's budget.
 
