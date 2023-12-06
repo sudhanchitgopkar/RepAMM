@@ -25,7 +25,7 @@ public class Sim {
 	//Init Agents
 	agents  = new Agent [N];
 	for (int i = 0; i < N; i++) {
-	    agents[i] = new Agent(i, OUTCOME, NUM_OUTCOMES, 100);
+	    agents[i] = new Agent(i, OUTCOME, NUM_OUTCOMES, 5);
 	} //for
 
 	if (LOG) System.out.println("MADE NEW SIM:\nNum Outcomes: " + NUM_OUTCOMES + 
