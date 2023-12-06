@@ -84,12 +84,12 @@ public class Agent {
      * Sigmoid helper function for belief calculation:
      * sig(x)  = 1 / (1 + exp(-x))
      *
-     * @param x real number.
+     * @param x real number
      * @return sig(x)
      */
     private double sigmoid(double x) {
         return 1.0 / (1.0 + Math.exp(-x));
-    }
+    } //sigmoid
 
     /**
        Calculates an agent's reputation.
@@ -114,7 +114,16 @@ public class Agent {
        @return agent's belief that the outcome will occur
       */
     private double calcBelief(int outcome) {
-	return rand.nextDouble();
+	double noise = (1 - rep) * rand.nextDouble();
+	int dir = rand.nextInt(2);
+
+	if (dir == 0) {
+	    this.belief = outcome - noise > 0 ? outcome - noise : outcome + noise;
+	} else {
+	    this.belief = outcome + noise < 1 ? outcome + noise : outcome - noise;
+	} //if
+	
+	return this.belief;
     } //calcBelief
     
     /**
