@@ -138,19 +138,8 @@ public class SRMM extends AMM {
      */
     public double buyTillPrice(Agent a, int outcome, double price) throws Exception {
 	double qty = 0;
-	/*
-	double x = Math.exp((price/BETA) + (state[outcome]/BETA));
-	double y = Math.exp((price/BETA) + (state[outcome == 0 ? 1 : 0]/BETA));
-	double z = Math.exp(state[outcome == 0 ? 1 : 0]/BETA);
-	qty = BETA * Math.log(x + y + z) - state[outcome];
-	*/
-	
-	double sum = 0;
-	for (int i = 0; i < state.length; i++) {
-	    sum += Math.exp(state[i]/BETA);
-	} //for
-	qty = BETA * Math.log(price * sum) - state[outcome];
-	
+	double x = (price * Math.exp(state[outcome == 0 ? 1 : 0]))/(1 - price);
+	qty = Math.log(x) - state[outcome];
 
 	if (!this.buy(a, qty, outcome)) {
 		throw new Exception("BUY TILL PRICE ERROR, TRIED TO BUY " + qty + " CONTRACTS");
