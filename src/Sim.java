@@ -63,6 +63,7 @@ public class Sim {
 		    } //catch
 		} //if
 		if (LOG) System.out.println("Updated Agent\n" + a);
+		if (LOG) System.out.println("Updated Market State\n" + amm);
 	    } //for
 	    
 	} //for
