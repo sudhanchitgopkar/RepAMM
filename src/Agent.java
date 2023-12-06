@@ -89,7 +89,6 @@ public class Agent {
        @return agent's belief that the outcome will occur
       */
     private double calcBelief(int outcome) {
-	//ToDo: Figure out this function
 	return rand.nextDouble();
     } //calcBelief
     
