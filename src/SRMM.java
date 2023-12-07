@@ -3,7 +3,7 @@ package mm;
 import infra.Agent;
 
 
-public class SRMM extends AMM {
+public class SRMM extends mm.AMM {
     private double [] state;
     private final double BETA = 1;
     private final boolean LOG = true;

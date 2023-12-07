@@ -9,15 +9,23 @@ import java.time.format.DateTimeFormatter;
 import java.io.File;
 
 public class Runner {
-	private static final int NUM_MARKETS = 1;
+	private static final int NUM_MARKETS = 5;
+	private static final int NUM_AGENTS = 10;
+	private static final int NUM_OUTCOMES = 2;
 	private static String output_directory;
+	private static Agent [] agents;
     public static void main (String [] args) {
 		output_directory = make_output_dir();
 		new File(output_directory).mkdirs();
-	//AMM srmm = new SRMM(2);
+
+		// initialize agents
+		agents  = new Agent [NUM_AGENTS];
+		for (int i = 0; i < NUM_AGENTS; i++) {
+			agents[i] = new Agent(i, NUM_OUTCOMES, 5);
+		} //for
 		for (int i = 0; i < NUM_MARKETS; ++i) {
 			AMM tfmm = new TradeFeeMM(2);
-			Sim s = new Sim(tfmm, i, output_directory);
+			Sim s = new Sim(tfmm, agents, i, output_directory);
 			s.run();
 		}//for
     } //main

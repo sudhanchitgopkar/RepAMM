@@ -178,6 +178,7 @@ public class TradeFeeMM extends mm.AMM{
             //Buy as much as possible with remaining budget. Specifically for binary outcome!
             // Need to take into account the trading fee! Just use a binary search here.
             qty = constrained_buy(a, outcome);
+            if (qty == 0) return qty;
             if (!this.buy(a, qty, outcome)) {
                 throw new Exception("BUY TILL PRICE FALLBACK ERROR, TRIED TO BUY " + qty + " CONTRACTS");
             } //if

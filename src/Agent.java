@@ -80,6 +80,27 @@ public class Agent {
     } //Agent
 
     /**
+     * This constructor for the agent assumes that they will have to
+     * re-calculate their beliefs for every market that they participate in.
+     * @param id agent id
+     * @param numOutcomes number of outcomes in the market
+     * @param budget trading budget for the market
+     */
+    public Agent(int id, int numOutcomes, double budget) {
+        this.id = id;
+        this.budget = budget;
+        this.rep = 0;
+        this.participations = 0;
+        this.opportunities = 0;
+        this.correctPreds = new ArrayList<Integer>();
+
+        this.holdings = new double[numOutcomes];
+        for (int i = 0; i < numOutcomes; ++i) {
+            holdings[i] = 0;
+        }
+    }
+
+    /**
      * Sigmoid helper function for belief calculation:
      * sig(x)  = 1 / (1 + exp(-x))
      *
@@ -112,7 +133,7 @@ public class Agent {
 
        @return agent's belief that the outcome will occur
       */
-    private double calcBelief(int outcome) {
+    protected double calcBelief(int outcome) {
 	double noise = (1 - rep) * rand.nextDouble();
 	int dir = rand.nextInt(2);
 

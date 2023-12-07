@@ -16,8 +16,8 @@ public class Sim {
     private Random rand = new Random(SEED);
     private final int NUM_OUTCOMES = 2;
     private final int OUTCOME = rand.nextInt(2); //returns int 0 or 1
-    private final int N = 10; //number of agents
-    private final int ROUNDS = 5;
+    private final int N = 2; //number of agents
+    private final int ROUNDS = 2;
     private final boolean LOG = true;
 
     private AMM amm;
@@ -81,6 +81,64 @@ public class Sim {
 		}
 	}
     } //Sim
+
+	public Sim(AMM amm, Agent[] agents, int market_num, String output_directory) {
+		this.amm = amm;//new SRMM(NUM_OUTCOMES);
+		this.market_num = market_num;
+		this.METADATA = output_directory + "/metadata_" + market_num + ".txt";
+		this.PRICE_HISTORY = output_directory + "/price_history_" + market_num + ".csv";
+		this.MARKET_HISTORY = output_directory + "/market_history_" + market_num + ".csv";
+		try {
+			// create new files
+			File metadata_file = new File(this.METADATA);
+			metadata_file.createNewFile();
+			this.METADATA_IO = new FileOutputStream(metadata_file, false);
+
+			File price_hist_file = new File(this.PRICE_HISTORY);
+			price_hist_file.createNewFile();
+			this.PRICE_HISTORY_IO = new FileOutputStream(price_hist_file, false);
+
+			File market_hist_file = new File(this.MARKET_HISTORY);
+			market_hist_file.createNewFile();
+			this.MARKET_HISTORY_IO = new FileOutputStream(market_hist_file, false);
+		} catch (IOException e) {
+			System.out.println("Error creating files...");
+		}
+
+		// load in the set of agents to be used...
+		this.agents = agents;
+		// calculate their beliefs for the current market, and determine
+		// whether they have correctly predicted the outcome.
+		for (Agent agent : agents) {
+			agent.calcBelief(OUTCOME);
+			if (Math.abs(agent.getBelief() - OUTCOME) < 0.5) {
+				agent.correctPreds.add(0, 1);
+			} else {
+				agent.correctPreds.add(0, 0);
+			}
+		}
+
+		if (LOG) System.out.println("MADE NEW SIM:\nNum Outcomes: " + NUM_OUTCOMES +
+				"\nOutcome: " + OUTCOME + "\nROUNDS: " + ROUNDS + "\nAGENTS: " + N);
+		if (LOG) {
+			// initialize file info
+			try {
+				METADATA_IO.write(("Num agents: " + String.valueOf(agents.length)).getBytes());
+				METADATA_IO.write(10);
+				METADATA_IO.write(("Market Maker: " + amm.get_MM_type()).getBytes());
+				METADATA_IO.write(10);
+				METADATA_IO.close();
+
+				PRICE_HISTORY_IO.write("Contract_0,Contract_1".getBytes());
+				PRICE_HISTORY_IO.write(10);
+				MARKET_HISTORY_IO.write("Contract_0,Contract_1".getBytes());
+				MARKET_HISTORY_IO.write(10);
+			} catch (IOException e) {
+				System.out.println("Error creating metadata file...");
+			}
+		}
+	} //Sim
+
 
 	public void logger() {
 		try {
