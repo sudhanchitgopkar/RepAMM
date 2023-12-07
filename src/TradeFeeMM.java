@@ -9,6 +9,7 @@ public class TradeFeeMM extends AMM{
     private final double BETA = 1.0;
     private final boolean LOG = true;
     private final double BASE_FEE = 0.05;
+    private final double STEP_SIZE = 0.01;
 
     /**
      * Initialize new Trade Fee MM
@@ -140,6 +141,28 @@ public class TradeFeeMM extends AMM{
     } //getPrice
 
     /**
+     * Root finding for a budget-constrained buy on a contract. The agent would like
+     * to but more, but is constrained by the cost of the contract as well as the trading
+     * fee associated.
+     *
+     * @param agent the purchashing agent
+     * @param outcome the contract being bought
+     * @return qty of contract to be bought (err lower rather than higher)
+     */
+    public double constrained_buy(Agent agent, int outcome) {
+        double qty = 0;
+        double transaction_cost;
+        double total_cost = 0;
+
+        while (total_cost < agent.getBudget()) {
+            qty += STEP_SIZE;
+            transaction_cost = trade_cost(outcome, qty);
+            total_cost = transaction_cost + trading_fee(agent, transaction_cost);
+        }
+        return Math.max(0.0, qty - STEP_SIZE);
+    }
+
+    /**
      Returns the quantity of contract `outcome` bought by agent a till its price becomes `price`.
 
      @param a the purchasing agent
@@ -155,10 +178,8 @@ public class TradeFeeMM extends AMM{
         if (!this.buy(a, qty, outcome)) {
             if (LOG) System.out.println("COULDN'T BUY " + qty + " CONTRACTS! BUYING MAX POSSIBLE WITH BUDGET INSTEAD.");
             //Buy as much as possible with remaining budget. Specifically for binary outcome!
-            double x = Math.exp((price/BETA) + (state[outcome]/BETA));
-            double y = Math.exp((price/BETA) + (state[outcome == 0 ? 1 : 0]/BETA));
-            double z = Math.exp(state[outcome == 0 ? 1 : 0]/BETA);
-            qty = BETA * Math.log(x + y + z) - state[outcome];
+            // Need to take into account the trading fee! Just use a binary search here.
+            qty = constrained_buy(a, outcome);
             if (!this.buy(a, qty, outcome)) {
                 throw new Exception("BUY TILL PRICE FALLBACK ERROR, TRIED TO BUY " + qty + " CONTRACTS");
             } //if
