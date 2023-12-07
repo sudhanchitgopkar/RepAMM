@@ -1,8 +1,6 @@
 package mm;
 
 import infra.Agent;
-import mm.AMM;
-import java.lang.Math.*;
 
 
 public class SRMM extends AMM {
@@ -184,10 +182,23 @@ public class SRMM extends AMM {
 	return qty;
     } //sellTillPrice
 
+	/**
+	 * Get current market state for an outcome
+	 *
+	 * @param outcome
+	 * @return state[outcome]
+	 */
+	public double get_state(int outcome) {
+		return state[outcome];
+	}
+
     @Override
     public String toString() {
 	String s = "CONTRACTS SOLD: (" + state[0] + "," + state[1] + ")\n";
 	s += "CONTRACT PRICES: (" + getPrice(0) + "," + getPrice(1) + ")";
 	return s;
     } //toString
+	public String get_MM_type() {
+		return "SRMM Market Maker";
+	}
 } //SRMM

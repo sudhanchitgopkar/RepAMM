@@ -1,10 +1,8 @@
 package mm;
 
 import infra.Agent;
-import mm.AMM;
-import java.lang.Math.*;
 
-public class TradeFeeMM extends AMM{
+public class TradeFeeMM extends mm.AMM{
     private double [] state;
     private final double BETA = 1.0;
     private final boolean LOG = true;
@@ -215,10 +213,22 @@ public class TradeFeeMM extends AMM{
         return qty;
     } //sellTillPrice
 
+    /**
+     * Get the current market state for a contract (outcome)
+     *
+     * @param outcome
+     * @return state[outcome]
+     */
+    public double get_state(int outcome) {
+        return state[outcome];
+    }
     @Override
     public String toString() {
         String s = "CONTRACTS SOLD: (" + state[0] + "," + state[1] + ")\n";
         s += "CONTRACT PRICES: (" + getPrice(0) + "," + getPrice(1) + ")";
         return s;
     } //toString
+    public String get_MM_type() {
+        return "Trade Fee MM";
+    }
 }
