@@ -53,7 +53,7 @@ public class SRMM extends AMM {
 	    buyState += Math.exp(state[i]);
 	} //for
 	
-	double price = Math.log(buyState) - Math.log(currState);
+	double price = (BETA * Math.log(buyState)) - (BETA * Math.log(currState));
 	
 	if (price > buyer.getBudget()) {
 	    //reset state
