@@ -4,7 +4,7 @@ import infra.Agent;
 import mm.AMM;
 import java.lang.Math.*;
 
-public class TradeFeeMM {
+public class TradeFeeMM extends AMM{
     private double [] state;
     private final double BETA = 1.0;
     private final boolean LOG = true;
