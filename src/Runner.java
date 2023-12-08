@@ -24,7 +24,7 @@ public class Runner {
 	Sim s = new Sim(tfmm);
 	s.run();
 	*/
-	String mm_type = "RepMM";
+	String mm_type = "TradeFeeMM";
 	output_directory = make_output_dir(mm_type);
 	new File(output_directory).mkdirs();
 	
@@ -34,7 +34,7 @@ public class Runner {
 	    agents[i] = new Agent(i, NUM_OUTCOMES, 5);
 	} //for
 	for (int i = 0; i < NUM_MARKETS; ++i) {
-	    AMM amm = new RepMM(2);
+	    AMM amm = new TradeFeeMM(2);
 	    Sim s = new Sim(amm, agents, i, output_directory);
 	    s.run();
 	}//for

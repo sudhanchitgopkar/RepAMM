@@ -6,7 +6,7 @@ public class TradeFeeMM extends mm.AMM{
     private double [] state;
     private final double BETA = 1.0;
     private final boolean LOG = true;
-    private final double BASE_FEE = 0.05;
+    private final double BASE_FEE = 0.02;
     private final double STEP_SIZE = 0.01;
 
     /**
