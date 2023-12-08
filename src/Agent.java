@@ -129,14 +129,12 @@ public class Agent {
        @return agent's reputation
     */
     protected double calcRep() {
-	return rand.nextFloat(); //tester for RepMM
-	/*
+	    //return rand.nextFloat(); //tester for RepMM
         if (participations == 0) return 0;
         int lower_val = Math.min(participations, LAST_N_MATCHES);
         double sig = sigmoid(lower_val);
         int num_correct = correctPreds.subList(0,lower_val).stream().mapToInt(Integer::intValue).sum();
         return sig * num_correct / lower_val;
-	*/
     } //private
     
     /**
