@@ -9,7 +9,7 @@ import java.time.format.DateTimeFormatter;
 import java.io.File;
 
 public class Runner {
-	private static final int NUM_MARKETS = 5;
+	private static final int NUM_MARKETS = 50;
 	private static final int NUM_AGENTS = 10;
 	private static final int NUM_OUTCOMES = 2;
 	private static String output_directory;

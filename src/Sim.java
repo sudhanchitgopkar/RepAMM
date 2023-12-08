@@ -34,6 +34,8 @@ public class Sim {
 	private FileOutputStream AGENT_PNL_IO;
 	private final String MM_PNL_HISTORY;
 	private FileOutputStream MM_PNL_IO;
+	private final String AGENT_REP;
+	private FileOutputStream AGENT_REP_IO;
 
 
     public Sim(AMM amm, int market_num, String output_directory) {
@@ -44,6 +46,7 @@ public class Sim {
 		this.MARKET_HISTORY = output_directory + "/market_history_" + market_num + ".csv";
 		this.AGENT_PNL_HISTORY = output_directory + "/agent_pnl_history_" + market_num + ".csv";
 		this.MM_PNL_HISTORY = output_directory + "/MM_pnl_history_" + market_num + ".csv";
+		this.AGENT_REP = output_directory + "/agent_rep_history_" + market_num + ".csv";
 		try {
 			// create new files
 			File metadata_file = new File(this.METADATA);
@@ -65,6 +68,10 @@ public class Sim {
 			File mm_pnl_file = new File(this.MM_PNL_HISTORY);
 			agent_pnl_file.createNewFile();
 			this.MM_PNL_IO = new FileOutputStream(mm_pnl_file, false);
+
+			File agent_rep_file = new File(this.AGENT_REP);
+			agent_rep_file.createNewFile();
+			this.AGENT_REP_IO = new FileOutputStream(agent_rep_file, false);
 
 		} catch (IOException e) {
 			System.out.println("Error creating files...");
@@ -106,6 +113,7 @@ public class Sim {
 		this.MARKET_HISTORY = output_directory + "/market_history_" + market_num + ".csv";
 		this.AGENT_PNL_HISTORY = output_directory + "/agent_pnl_history_" + market_num + ".csv";
 		this.MM_PNL_HISTORY = output_directory + "/MM_pnl_history_" + market_num + ".csv";
+		this.AGENT_REP = output_directory + "/agent_rep_history_" + market_num + ".csv";
 		try {
 			// create new files
 			File metadata_file = new File(this.METADATA);
@@ -127,6 +135,10 @@ public class Sim {
 			File mm_pnl_file = new File(this.MM_PNL_HISTORY);
 			agent_pnl_file.createNewFile();
 			this.MM_PNL_IO = new FileOutputStream(mm_pnl_file, false);
+
+			File agent_rep_file = new File(this.AGENT_REP);
+			agent_rep_file.createNewFile();
+			this.AGENT_REP_IO = new FileOutputStream(agent_rep_file, false);
 
 		} catch (IOException e) {
 			System.out.println("Error creating files...");
@@ -208,6 +220,14 @@ public class Sim {
 		}
 	}
 
+	public void agent_rep_logger(Agent agent) {
+		try {
+			AGENT_REP_IO.write(String.valueOf(agent.getRep()).getBytes());
+		} catch (IOException e) {
+			System.out.println("Couldn't record agent reputation");
+		}
+	}
+
     public void run() {
 		logger();
 	for (int i = 0; i < ROUNDS; i++) {
@@ -257,6 +277,7 @@ public class Sim {
 		double mm_PNL = 0;
 		for (Agent agent : agents) {
 			agent.calcRep();
+			agent_rep_logger(agent);
 			agent.add_opportunity();
 			// update participation
 			if (agent.getHolding(0) + agent.getHolding(1) > 0.0) {
@@ -281,5 +302,14 @@ public class Sim {
 		}
 		// log MM PNL
 		mm_PnL_logger(mm_PNL);
+		// close last files
+		try {
+			MM_PNL_IO.close();
+			AGENT_PNL_IO.close();
+			AGENT_REP_IO.close();
+		} catch (IOException e) {
+			System.out.println("couldnt get them files closed, sorry");
+		}
+
     } //run
 } //class
