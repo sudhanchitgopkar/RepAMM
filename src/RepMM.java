@@ -156,12 +156,50 @@ public class RepMM extends AMM {
             double z = Math.exp(mktState(outcome == 0 ? 1 : 0)/BETA);
             qty = BETA * Math.log(x + y + z) - mktState(outcome);
             if (!this.buy(a, qty, outcome)) {
-                throw new Exception("BUY TILL PRICE FALLBACK ERROR, TRIED TO BUY " + qty + " CONTRACTS");
+		this.buy(a, searchQtyBuy(a, outcome, price), outcome);
+                //throw new Exception("BUY TILL PRICE FALLBACK ERROR, TRIED TO BUY " + qty + " CONTRACTS");
             } //if
         } //if
 
         return qty;
     } //buyTillPrice
+
+    private double searchQtyBuy(Agent a, int outcome, double price) {
+	double THRESH = 0.01, qty = 0;
+	int l = 0, r = 30;
+
+	while(l <= r) {
+	    int m = l + (r - l)/2;
+
+	    double res = getFakeBuyPrice(outcome, a, m);
+	    if (Math.abs(price - res) < THRESH) return res;
+
+	    if (price < res) r = --m;
+	    else l = ++m;
+	} //while
+	
+	return qty;
+    } //searchQty
+
+    private double fakeBuyState(int outcome, Agent a, double amt) {
+	double x0 = state[outcome][0], x1 = state[outcome][1];//, y0 = state[outcome == 0 ? 1 : 0][0], y1 = state[outcome == 0 ? 1 : 0][1];
+	x0 += amt;
+	x1 += a.getRep() * amt;
+	return CONTRACT_WEIGHT * (x0) - (REP_WEIGHT) * (x1/x0);
+    } //fakeSell
+
+    public double getFakeBuyPrice(int outcome, Agent a, double amt) {
+        double price = Math.exp(fakeBuyState(outcome, a, amt)/BETA);
+        double sum = 0;
+	
+        for (int i = 0; i < state.length; i++) {
+	    if (outcome != i) sum += Math.exp(mktState(i)/BETA);
+        } //for
+
+        return price/(price + sum);
+    } //getPrice
+
+
     
 
     private double searchQty(Agent a, int outcome, double price) {
