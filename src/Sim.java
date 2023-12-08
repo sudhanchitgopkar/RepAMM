@@ -13,7 +13,7 @@ import java.io.IOException;
 public class Sim {
     //Params
     private final long SEED = 4092002;
-    private Random rand = new Random(SEED);
+    private Random rand = new Random();
     private final int NUM_OUTCOMES = 2;
     private final int OUTCOME = rand.nextInt(2); //returns int 0 or 1
     private final int N = 2; //number of agents
@@ -149,7 +149,7 @@ public class Sim {
 		// whether they have correctly predicted the outcome.
 		for (Agent agent : agents) {
 			agent.calcBelief(OUTCOME);
-			if (Math.abs(agent.getBelief() - OUTCOME) < 0.5) {
+			if (Math.abs(agent.getBelief() - OUTCOME) > 0.5) {
 				agent.correctPreds.add(0, 1);
 			} else {
 				agent.correctPreds.add(0, 0);
