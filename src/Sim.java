@@ -21,15 +21,20 @@ public class Sim {
     private final boolean LOG = true;
 
     private AMM amm;
-    private Agent [] agents;
-	private int market_num;
+    private final Agent [] agents;
+	private final int market_num;
 
-	private String METADATA;
+	private final String METADATA;
 	private FileOutputStream METADATA_IO;
-	private String PRICE_HISTORY;
+	private final String PRICE_HISTORY;
 	private FileOutputStream PRICE_HISTORY_IO;
-	private String MARKET_HISTORY;
+	private final String MARKET_HISTORY;
 	private FileOutputStream MARKET_HISTORY_IO;
+	private final String AGENT_PNL_HISTORY;
+	private FileOutputStream AGENT_PNL_IO;
+	private final String MM_PNL_HISTORY;
+	private FileOutputStream MM_PNL_IO;
+
 
     public Sim(AMM amm, int market_num, String output_directory) {
 		this.amm = amm;//new SRMM(NUM_OUTCOMES);
@@ -37,6 +42,8 @@ public class Sim {
 		this.METADATA = output_directory + "/metadata_" + market_num + ".txt";
 		this.PRICE_HISTORY = output_directory + "/price_history_" + market_num + ".csv";
 		this.MARKET_HISTORY = output_directory + "/market_history_" + market_num + ".csv";
+		this.AGENT_PNL_HISTORY = output_directory + "/agent_pnl_history_" + market_num + ".csv";
+		this.MM_PNL_HISTORY = output_directory + "/MM_pnl_history_" + market_num + ".csv";
 		try {
 			// create new files
 			File metadata_file = new File(this.METADATA);
@@ -50,6 +57,15 @@ public class Sim {
 			File market_hist_file = new File(this.MARKET_HISTORY);
 			market_hist_file.createNewFile();
 			this.MARKET_HISTORY_IO = new FileOutputStream(market_hist_file, false);
+
+			File agent_pnl_file = new File(this.AGENT_PNL_HISTORY);
+			agent_pnl_file.createNewFile();
+			this.AGENT_PNL_IO = new FileOutputStream(agent_pnl_file, false);
+
+			File mm_pnl_file = new File(this.MM_PNL_HISTORY);
+			agent_pnl_file.createNewFile();
+			this.MM_PNL_IO = new FileOutputStream(mm_pnl_file, false);
+
 		} catch (IOException e) {
 			System.out.println("Error creating files...");
 		}
@@ -88,6 +104,8 @@ public class Sim {
 		this.METADATA = output_directory + "/metadata_" + market_num + ".txt";
 		this.PRICE_HISTORY = output_directory + "/price_history_" + market_num + ".csv";
 		this.MARKET_HISTORY = output_directory + "/market_history_" + market_num + ".csv";
+		this.AGENT_PNL_HISTORY = output_directory + "/agent_pnl_history_" + market_num + ".csv";
+		this.MM_PNL_HISTORY = output_directory + "/MM_pnl_history_" + market_num + ".csv";
 		try {
 			// create new files
 			File metadata_file = new File(this.METADATA);
@@ -101,6 +119,15 @@ public class Sim {
 			File market_hist_file = new File(this.MARKET_HISTORY);
 			market_hist_file.createNewFile();
 			this.MARKET_HISTORY_IO = new FileOutputStream(market_hist_file, false);
+
+			File agent_pnl_file = new File(this.AGENT_PNL_HISTORY);
+			agent_pnl_file.createNewFile();
+			this.AGENT_PNL_IO = new FileOutputStream(agent_pnl_file, false);
+
+			File mm_pnl_file = new File(this.MM_PNL_HISTORY);
+			agent_pnl_file.createNewFile();
+			this.MM_PNL_IO = new FileOutputStream(mm_pnl_file, false);
+
 		} catch (IOException e) {
 			System.out.println("Error creating files...");
 		}
@@ -152,7 +179,33 @@ public class Sim {
 					).getBytes()
 			);
 			MARKET_HISTORY_IO.write(10);
-		} catch (IOException e) { System.out.println("whoopsie"); };
+		} catch (IOException e) { System.out.println("whoopsie"); }
+	}
+
+	/**
+	 * Log PNL information for an agent after a market
+	 * @param agent the agent being tracked.
+	 */
+	public void agent_PnL_logger(Agent agent) {
+		try {
+			AGENT_PNL_IO.write(String.valueOf(agent.getPnL()).getBytes());
+			AGENT_PNL_IO.write(10);
+		} catch (IOException e) {
+			System.out.println("LOG ERROR AGENT PNL");
+		}
+	}
+
+	/**
+	 * MM PNL information logger.
+	 * @param mm_PNL
+	 */
+	public void mm_PnL_logger(double mm_PNL) {
+		try {
+			MM_PNL_IO.write(String.valueOf(mm_PNL).getBytes());
+			MM_PNL_IO.write(10);
+		} catch (IOException e) {
+			System.out.println("LOG ERROR MM PNL");
+		}
 	}
 
     public void run() {
@@ -199,6 +252,34 @@ public class Sim {
 		} catch (IOException e) {
 			System.out.println("Error closing files?!!?");
 		}
-    } //run
 
+		// Track agent performance and reset per-market values.
+		double mm_PNL = 0;
+		for (Agent agent : agents) {
+			agent.calcRep();
+			agent.add_opportunity();
+			// update participation
+			if (agent.getHolding(0) + agent.getHolding(1) > 0.0) {
+				agent.add_participation();
+			}
+			// payout agent and calculate PnL
+			double payout = 0;
+			if (OUTCOME == 0) {
+				payout = agent.getHoldings()[0];
+			} else if (OUTCOME == 1) {
+				payout = agent.getHoldings()[1];
+			}
+			double agent_PNL = payout - (agent.getInitial_budget() - agent.getBudget());
+			agent.setPnL(agent_PNL);
+			mm_PNL -= agent_PNL;
+			// reset holdings
+			agent.reset_holdings();
+			// reset budget
+			agent.setBudget(agent.getInitial_budget());
+
+			agent_PnL_logger(agent);
+		}
+		// log MM PNL
+		mm_PnL_logger(mm_PNL);
+    } //run
 } //class

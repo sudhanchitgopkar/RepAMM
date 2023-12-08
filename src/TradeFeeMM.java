@@ -230,6 +230,6 @@ public class TradeFeeMM extends mm.AMM{
         return s;
     } //toString
     public String get_MM_type() {
-        return "Trade Fee MM";
+        return "TradeFee";
     }
 }

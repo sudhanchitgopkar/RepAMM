@@ -15,7 +15,8 @@ public class Runner {
 	private static String output_directory;
 	private static Agent [] agents;
     public static void main (String [] args) {
-		output_directory = make_output_dir();
+		String mm_type = "TradeFee";
+		output_directory = make_output_dir(mm_type);
 		new File(output_directory).mkdirs();
 
 		// initialize agents
@@ -24,15 +25,15 @@ public class Runner {
 			agents[i] = new Agent(i, NUM_OUTCOMES, 5);
 		} //for
 		for (int i = 0; i < NUM_MARKETS; ++i) {
-			AMM tfmm = new TradeFeeMM(2);
-			Sim s = new Sim(tfmm, agents, i, output_directory);
+			AMM amm = new TradeFeeMM(2);
+			Sim s = new Sim(amm, agents, i, output_directory);
 			s.run();
 		}//for
     } //main
 
-	public static String make_output_dir() {
-		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd_MM_uuuu_HH:mm:ss");
+	public static String make_output_dir(String mm_type) {
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("MM_dd_HH:mm:ss");
 		LocalDateTime now = LocalDateTime.now();
-		return dtf.format(now);
+		return mm_type + "_" +  dtf.format(now);
 	}
 } //class

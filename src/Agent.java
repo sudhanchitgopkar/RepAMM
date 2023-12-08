@@ -1,10 +1,11 @@
 package infra;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 
 public class Agent {
-    protected double rep, belief, budget;
+    protected double rep, belief, budget, initial_budget;
     protected int participations;
     protected int opportunities;
     protected ArrayList<Integer> correctPreds;
@@ -15,6 +16,7 @@ public class Agent {
     private final int LAST_N_MATCHES = 10; // matches to include in a rolling window
     private Random rand = new Random();
     private int id;
+    protected double PnL; // profits and losses
     
     /**
        Initializes a new Agent with some reputation and belief.
@@ -34,6 +36,7 @@ public class Agent {
 	this.participations = p;
 	this.opportunities = o;
 	this.correctPreds = new ArrayList<Integer>();
+    this.PnL = 0.0;
 
     for (int i = 0; i < c; ++i) {
         this.correctPreds.add(1);
@@ -46,7 +49,8 @@ public class Agent {
 	this.belief = calcBelief(outcome);
 
 	this.budget = budget;
-	
+	this.initial_budget = budget;
+
 	this.holdings = new double[numOutcomes];
 	for (int i = 0; i < numOutcomes; i++) {
 	    holdings[i] = 0;
@@ -70,6 +74,8 @@ public class Agent {
 
 	this.rep = 0;
 	this.belief = calcBelief(outcome);
+    this.initial_budget = budget;
+    this.PnL = 0.0;
 
 	this.budget = budget;
 
@@ -82,6 +88,8 @@ public class Agent {
     /**
      * This constructor for the agent assumes that they will have to
      * re-calculate their beliefs for every market that they participate in.
+     * Likewise, the repuation of the agent has to be re-calced after every
+     * market.
      * @param id agent id
      * @param numOutcomes number of outcomes in the market
      * @param budget trading budget for the market
@@ -93,6 +101,8 @@ public class Agent {
         this.participations = 0;
         this.opportunities = 0;
         this.correctPreds = new ArrayList<Integer>();
+        this.PnL = 0.0;
+        this.initial_budget = budget;
 
         this.holdings = new double[numOutcomes];
         for (int i = 0; i < numOutcomes; ++i) {
@@ -118,12 +128,12 @@ public class Agent {
        
        @return agent's reputation
     */
-    private double calcRep() {
+    protected double calcRep() {
         if (participations == 0) return 0;
-        double sig = sigmoid(Math.min(participations, LAST_N_MATCHES));
-        int num_correct = correctPreds.subList(0,LAST_N_MATCHES)
-                .stream().mapToInt(Integer::intValue).sum();
-        return sig * num_correct / Math.min(participations, LAST_N_MATCHES);
+        int lower_val = Math.min(participations, LAST_N_MATCHES);
+        double sig = sigmoid(lower_val);
+        int num_correct = correctPreds.subList(0,lower_val).stream().mapToInt(Integer::intValue).sum();
+        return sig * num_correct / lower_val;
     } //private
     
     /**
@@ -154,6 +164,18 @@ public class Agent {
     public double getBudget() {
 	return budget;
     } //getBudget
+
+    /**
+     * Budget Setter.
+     * @param new_budget
+     */
+    void setBudget(double new_budget) { budget = new_budget; }
+
+    /**
+     * Getter for agent's initial budget.
+     * @return initial budget
+     */
+    public double getInitial_budget() { return initial_budget; } //getInitialBudget
     
     /**
        Getter for agent's belief.
@@ -213,6 +235,13 @@ public class Agent {
     public double getHolding(int outcome) {
 	return holdings[outcome];
     } //getHolding
+
+    /**
+     * Reset agent holdings after a market.
+     */
+    void reset_holdings() {
+        Arrays.fill(holdings, 0.0);
+    }
     
     /**
        Setter for agent's holdings.
@@ -242,6 +271,28 @@ public class Agent {
     public int getID() {
 	return id;
     } //getID
+
+    /**
+     * Increment the agent's participations
+     */
+    void add_participation() { ++participations; }
+
+    /**
+     * Increment agent opportunity.
+     */
+    void add_opportunity() { ++opportunities; }
+
+    /**
+     * PnL getter for the agent
+     * @return
+     */
+    double getPnL() { return PnL; }
+
+    /**
+     * PnL setter for the agent
+     * @param new_PnL
+     */
+    void setPnL(double new_PnL) { PnL = new_PnL; }
 
     @Override
     public String toString() {

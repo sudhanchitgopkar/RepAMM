@@ -199,6 +199,6 @@ public class SRMM extends mm.AMM {
 	return s;
     } //toString
 	public String get_MM_type() {
-		return "SRMM Market Maker";
+		return "SRMM";
 	}
 } //SRMM
