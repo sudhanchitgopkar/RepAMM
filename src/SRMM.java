@@ -32,7 +32,7 @@ public class SRMM extends mm.AMM {
 
        @param buyer the agent buying the contracts
        @param amt the amount of contracts being bought
-       @param the outcome the buyer is buying contracts for
+       @param outcome the buyer is buying contracts for
        @return whether the operation was valid (buyer had enough money for purchase)
      */
     public boolean buy(Agent buyer, double amt, int outcome) {
@@ -72,9 +72,9 @@ public class SRMM extends mm.AMM {
        Gives some payment to the buyer, if valid, and changes the market state.
        Does nothing if the call is invalid.
 
-       @param buyer the agent selling the contracts
+       @param seller the agent selling the contracts
        @param amt the amount of contracts being sold
-       @param the outcome the seller is selling contracts for
+       @param outcome the seller is selling contracts for
        @return whether the operation was valid (seller has the contracts they intend to sell)
      */
 
@@ -131,7 +131,7 @@ public class SRMM extends mm.AMM {
        
        @param a the purchasing agent
        @param outcome the index of the outcome to purchase in state
-       @param the price of the outcome after the purchase
+       @param price of the outcome after the purchase
        @return the quantity of contract `outcome` bought
      */
     public double buyTillPrice(Agent a, int outcome, double price) throws Exception {
@@ -145,10 +145,13 @@ public class SRMM extends mm.AMM {
 	    double x = Math.exp((price/BETA) + (state[outcome]/BETA));
 	    double y = Math.exp((price/BETA) + (state[outcome == 0 ? 1 : 0]/BETA));
 	    double z = Math.exp(state[outcome == 0 ? 1 : 0]/BETA);
-	    qty = 0.85 * BETA * Math.log(x + y + z) - state[outcome];
-	    if (!this.buy(a, qty, outcome)) {
-		throw new Exception("BUY TILL PRICE FALLBACK ERROR, TRIED TO BUY " + qty + " CONTRACTS");
-	    } //if
+	    qty = Math.abs(BETA * Math.log(x + y + z) - state[outcome]);
+		while (!this.buy(a, qty, outcome)) {
+			qty = qty * 0.97; // qty reduction - numerical fix
+		}
+	    //if (!this.buy(a, qty, outcome)) {
+		//throw new Exception("BUY TILL PRICE FALLBACK ERROR, TRIED TO BUY " + qty + " CONTRACTS");
+	    //} //if
 	} //if
 
 	return qty;
@@ -159,7 +162,7 @@ public class SRMM extends mm.AMM {
        
        @param a the purchasing agent
        @param outcome the index of the outcome to purchase in state
-       @param the price of the outcome after the purchase
+       @param price of the outcome after the purchase
        @return the quantity of contract `outcome` bought
      */    
     public double sellTillPrice(Agent a, int outcome, double price) {

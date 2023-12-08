@@ -134,6 +134,7 @@ public class Agent {
         int lower_val = Math.min(participations, LAST_N_MATCHES);
         double sig = sigmoid(lower_val);
         int num_correct = correctPreds.subList(0,lower_val).stream().mapToInt(Integer::intValue).sum();
+        rep = sig * num_correct / lower_val;
         return sig * num_correct / lower_val;
     } //private
     
@@ -145,7 +146,8 @@ public class Agent {
        @return agent's belief that the outcome will occur
       */
     protected double calcBelief(int outcome) {
-	double noise = (1 - rep) * rand.nextDouble();
+	//double noise = (1 - rep) * rand.nextDouble();
+        double noise = 0.05 + (rand.nextDouble() * ((1 - rep) - 0.05));
 	int dir = rand.nextInt(2);
 
 	if (dir == 0) {

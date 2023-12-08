@@ -79,7 +79,7 @@ public class TradeFeeMM extends mm.AMM{
         //update market state
         state[outcome] += amt;
 
-        if (cost > buyer.getBudget()) {
+        if (cost + fee > buyer.getBudget()) {
             //reset state
             state[outcome] -= amt;
             if (LOG) System.out.println("AGENT " + buyer.getID() + " FAILED TO BUY " + amt +

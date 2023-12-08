@@ -17,7 +17,7 @@ public class Sim {
     private final int NUM_OUTCOMES = 2;
     private final int OUTCOME = rand.nextInt(2); //returns int 0 or 1
     private final int N = 2; //number of agents
-    private final int ROUNDS = 3;
+    private final int ROUNDS = 5;
     private final boolean LOG = true;
 
     private AMM amm;
@@ -223,6 +223,7 @@ public class Sim {
 	public void agent_rep_logger(Agent agent) {
 		try {
 			AGENT_REP_IO.write(String.valueOf(agent.getRep()).getBytes());
+			AGENT_REP_IO.write(10);
 		} catch (IOException e) {
 			System.out.println("Couldn't record agent reputation");
 		}
@@ -230,6 +231,7 @@ public class Sim {
 
     public void run() {
 		logger();
+		if (LOG) System.out.println("MARKET NUM: " + market_num);
 	for (int i = 0; i < ROUNDS; i++) {
 	    if (LOG) System.out.println("ROUND: " + i + "\n" + amm + "\n----\n");
 	    
