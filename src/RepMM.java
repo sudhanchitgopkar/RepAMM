@@ -20,7 +20,7 @@ public class RepMM extends AMM {
     public RepMM(int numOutcomes) {
 	state = new double [numOutcomes][2];
 	for (int i = 0; i < numOutcomes; i++) {
-	    state[i] = new double [] {0,0};
+	    state[i] = new double [] {1,0};
 	} //for
     } //RepMM
     
@@ -140,25 +140,40 @@ public class RepMM extends AMM {
 	if (LOG) System.out.println("BUYING TILL PRICE " + price + "...");
 	double qty = 0, p = price;
 	
-	double r = a.getRep(), x0 = state[outcome][0] == 0 ? 0.00001 : state[outcome][0], x1 = state[outcome][1], c = CONTRACT_WEIGHT,
-	    y0 = state[outcome == 0 ? 1 : 0][0] == 0 ? 0.000001 : state[outcome == 0 ? 1 : 0][0], y1 = state[outcome == 0 ? 1 : 0][1];
+	double r = a.getRep(), x0 = state[outcome][0], x1 = state[outcome][1], c = CONTRACT_WEIGHT,
+	    y0 = state[outcome == 0 ? 1 : 0][0], y1 = state[outcome == 0 ? 1 : 0][1];
 	
 	double coeff = 1/(2 * c * x0 * y0);
 	
 	double innermost = Math.pow((r - c * r + Math.log(-1 * (p/(-1 + p)))), 2) + 4 * (-1 + c) * c * r * x0 - 4 * (-1 + c) * c * x1;
-	innermost += (Math.pow(-1 + c, 2) * (x1 * x1))/(x0 * x0) + 2 * c * (r - c * r + Math.log(-p/(1 + p))) * y0;
-	innermost += (c * c) + (y0 * y0) - 2 * (-1 + c) * c * y1 + ((2 * (-1 + c) * ((-1 + c) * r * Math.log((-1 * p)/(-1 + p))) * y1)/(y0));
+	innermost += (Math.pow(-1 + c, 2) * (x1 * x1))/(x0 * x0) + 2 * c * (r - c * r + Math.log(-p/(-1 + p))) * y0;
+	innermost += (c * c) * (y0 * y0) - 2 * (-1 + c) * c * y1 + ((2 * (-1 + c) * ((-1 + c) * r - Math.log((-1 * p)/(-1 + p))) * y1)/(y0));
 	innermost += ((Math.pow(-1 + c, 2) * (y1 * y1))/(y0 * y0));
 	innermost += ((2 * (-1 + c) * x1 * ((r - c * r + Math.log((-1 * p)/(-1 + p))) * y0 + c * (y0 * y0) - (-1 + c) * y1))/(x0 * y0));
 	
 	double outer = 1/(c * c);
 	
 	double outermost = r * x0 * y0 - c * r * x0 * y0 + Math.log((-1 * p)/(-1 + p)) * x0 * y0 - 2 * c * (x0 * x0) * y0 - x1 * y0 + c * x1 * y0;
-	outermost += c * x0 * (y0 * y0) + x0 * y1 - c * x0 * y1 + c * x0 * y0;
-
-	if (LOG) System.out.println("\t BUYING " + qty + " CONTRACTS");
-	qty = coeff * (outermost * Math.sqrt(outer * innermost));
+	outermost += c * x0 * (y0 * y0) + x0 * y1 - c * x0 * y1;
+	double sqrtmult = c * x0 * y0;
 	
+
+	double sqrtval = outer * innermost;
+	sqrtval = Math.sqrt(sqrtval);
+
+	/*
+	System.out.println("INNERMOST: " + innermost);
+	System.out.println("OUTER: " + outer);
+	System.out.println("OUTERMOST: " + outermost + sqrtval);
+	System.out.println("COEFF: " + coeff);
+	System.out.println("SQRT: " + sqrtval);
+	System.out.println("B4: " + (outermost + (sqrtval * sqrtmult)));
+	System.out.println("SOLN: " + (coeff * (outermost + (sqrtval * sqrtmult))));
+	*/
+
+	qty = (outermost + (sqrtval * sqrtmult));
+	if (LOG) System.out.println("\t BUYING " + qty + " CONTRACTS");
+
 	
 	if (!this.buy(a, qty, outcome)) {
 	    if (LOG) System.out.println("COULDN'T BUY " + qty + " CONTRACTS! BUYING MAX POSSIBLE WITH BUDGET INSTEAD.");
@@ -206,7 +221,8 @@ public class RepMM extends AMM {
     @Override
     public String toString() {
 	String s = "CONTRACTS SOLD: (" + state[0][0] + "," + state[1][0] + ")\n";
-	s += "AVG REP PER CONTRACT: (" + state[0][1] + "," + state[1][1] + ")\n";
+	s += "AVG REP PER CONTRACT: (" + state[0][1]/state[0][0]
+	    + "," + state[1][1]/state[1][0] + ")\n";
 	s += "MKT STATE: (" + mktState(0) + "," + mktState(1) + ")\n";
 	s += "CONTRACT PRICES: (" + getPrice(0) + "," + getPrice(1) + ")";
 	return s;
@@ -214,7 +230,15 @@ public class RepMM extends AMM {
 
     private double mktState(int outcome) {
 	double mktState = CONTRACT_WEIGHT * (state[outcome][0]) + 
-	    (REP_WEIGHT) * (state[outcome][1]/(state[outcome][0] == 0 ? 0.00001 : 0));
+	    (REP_WEIGHT) * (state[outcome][1]/state[outcome][0]);
 	return mktState;
     } //repPerContract
+
+    public double get_state(int outcome) {
+	return mktState(outcome);
+    } //get_state
+
+    public String get_MM_type() {
+	return "RepMM";
+    } //getMMType
 } //SRMM
