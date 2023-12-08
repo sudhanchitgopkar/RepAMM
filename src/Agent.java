@@ -74,11 +74,11 @@ public class Agent {
 
 	this.rep = calcRep();
 	this.belief = calcBelief(outcome);
-    this.initial_budget = budget;
-    this.PnL = 0.0;
+	this.initial_budget = budget;
+	this.PnL = 0.0;
 
 	this.budget = budget;
-
+	
 	this.holdings = new double[numOutcomes];
 	for (int i = 0; i < numOutcomes; i++) {
 	    holdings[i] = 0;
@@ -97,7 +97,7 @@ public class Agent {
     public Agent(int id, int numOutcomes, double budget) {
         this.id = id;
         this.budget = budget;
-        this.rep = 0;
+        this.rep = calcRep();
         this.participations = 0;
         this.opportunities = 0;
         this.correctPreds = new ArrayList<Integer>();
