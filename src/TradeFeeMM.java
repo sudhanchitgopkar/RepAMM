@@ -1,10 +1,8 @@
 package mm;
 
 import infra.Agent;
-import mm.AMM;
-import java.lang.Math.*;
 
-public class TradeFeeMM extends AMM{
+public class TradeFeeMM extends mm.AMM{
     private double [] state;
     private final double BETA = 1.0;
     private final boolean LOG = true;
@@ -180,6 +178,7 @@ public class TradeFeeMM extends AMM{
             //Buy as much as possible with remaining budget. Specifically for binary outcome!
             // Need to take into account the trading fee! Just use a binary search here.
             qty = constrained_buy(a, outcome);
+            if (qty == 0) return qty;
             if (!this.buy(a, qty, outcome)) {
                 throw new Exception("BUY TILL PRICE FALLBACK ERROR, TRIED TO BUY " + qty + " CONTRACTS");
             } //if
@@ -215,10 +214,22 @@ public class TradeFeeMM extends AMM{
         return qty;
     } //sellTillPrice
 
+    /**
+     * Get the current market state for a contract (outcome)
+     *
+     * @param outcome
+     * @return state[outcome]
+     */
+    public double get_state(int outcome) {
+        return state[outcome];
+    }
     @Override
     public String toString() {
         String s = "CONTRACTS SOLD: (" + state[0] + "," + state[1] + ")\n";
         s += "CONTRACT PRICES: (" + getPrice(0) + "," + getPrice(1) + ")";
         return s;
     } //toString
+    public String get_MM_type() {
+        return "TradeFee";
+    }
 }
