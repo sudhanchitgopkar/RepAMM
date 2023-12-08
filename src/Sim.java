@@ -37,7 +37,6 @@ public class Sim {
 	private final String AGENT_REP;
 	private FileOutputStream AGENT_REP_IO;
 
-
     public Sim(AMM amm, int market_num, String output_directory) {
 		this.amm = amm;//new SRMM(NUM_OUTCOMES);
 		this.market_num = market_num;
