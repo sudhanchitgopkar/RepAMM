@@ -183,7 +183,7 @@ public class RepMM extends AMM {
             qty = 1/(2 * c * x0) * (c * (x0 * x0) - (-1 + c) * x1 + x0 * (r - c * r - Math.log(-1 + 1/p) - 2 * c * y0 + c * Math.sqrt(1/((c * c) * (x0 * x0)) * (-2 * c * ((-1 + c) * r + Math.log(-1 + 1/p)) * (x0 * x0 * x0) + (c * c) * (x0 * x0 * x0 * x0) + 2 * (-1 + c) * ((-1 + c) * r + Math.log(-1 + 1/p)) * x0 * x1 + Math.pow(-1 + c, 2) * (x1 * x1) + (x0 * x0) * ((r * r) - 2 * c * (r * r) + (c * c) * (r * r) - 2 * r * Math.log(-1 + 1/p) + 2 * c * r * Math.log(-1 + 1/p) + (Math.pow(Math.log(-1 + 1/p), 2)) + 4 * (-1 + c) * c * r * y0 - 4 * (-1 + c) * c * y1 + 2 * c * x1 - 2 * (c * c) * x1)))));
         } //if
 
-        if (qty < 0) return qty;
+        //if (qty < 0) return qty;
         //if we don't have qty amount, sell all that we can
         this.sell(a, Math.min(qty, a.getHolding(outcome)), outcome);
 
