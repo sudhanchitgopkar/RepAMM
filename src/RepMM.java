@@ -139,11 +139,15 @@ public class RepMM extends AMM {
     public double buyTillPrice(Agent a, int outcome, double price) throws Exception {
 	if (LOG) System.out.println("BUYING TILL PRICE " + price + "...");
 	double qty = 0, p = price;	
-	double r = a.getRep(), x0 = state[outcome][0], x1 = state[outcome][1], c = CONTRACT_WEIGHT,
-	    y0 = state[outcome == 0 ? 1 : 0][0], y1 = state[outcome == 0 ? 1 : 0][1];
+	double r = a.getRep(), x0 = state[0][0], x1 = state[0][1], c = CONTRACT_WEIGHT,
+	    y0 = state[1][0], y1 = state[1][1];
 	
-	qty = 1/(2 * c * y0) * (c * (y0 * y0) - (-1 + c) * y1 + y0 * (r - c * r - Math.log(-1 + 1/p) - 2 * c * x0 + c * Math.sqrt(1/((c * c) * (y0 * y0)) * (-2 * c * ((-1 + c) * r + Math.log(-1 + 1/p)) * (y0 * y0 * y0) + (c * c) * (y0 * y0 * y0 * y0) + 2 * (-1 + c) * ((-1 + c) * r + Math.log(-1 + 1/p)) * y0 * y1 + Math.pow(-1 + c, 2) * (y1 * y1) + (y0 * y0) * ((r * r) - 2 * c * (r * r) + (c * c) * (r * r) - 2 * r * Math.log(-1 + 1/p) + 2 * c * r * Math.log(-1 + 1/p) + (Math.pow(Math.log(-1 + 1/p), 2)) + 4 * (-1 + c) * c * r * x0 - 4 * (-1 + c) * c * x1 + 2 * c * y1 - 2 * (c * c) * y1)))));
-	
+	if (outcome == 0) {
+	    qty = 1/(2 * c * y0) * (c * (y0 * y0) - (-1 + c) * y1 + y0 * (r - c * r - Math.log(-1 + 1/p) - 2 * c * x0 + c * Math.sqrt(1/((c * c) * (y0 * y0)) * (-2 * c * ((-1 + c) * r + Math.log(-1 + 1/p)) * (y0 * y0 * y0) + (c * c) * (y0 * y0 * y0 * y0) + 2 * (-1 + c) * ((-1 + c) * r + Math.log(-1 + 1/p)) * y0 * y1 + Math.pow(-1 + c, 2) * (y1 * y1) + (y0 * y0) * ((r * r) - 2 * c * (r * r) + (c * c) * (r * r) - 2 * r * Math.log(-1 + 1/p) + 2 * c * r * Math.log(-1 + 1/p) + (Math.pow(Math.log(-1 + 1/p), 2)) + 4 * (-1 + c) * c * r * x0 - 4 * (-1 + c) * c * x1 + 2 * c * y1 - 2 * (c * c) * y1)))));
+	} else {
+	    qty = 1/(2 * c * x0) * (c * (x0 * x0) - (-1 + c) * x1 + x0 * (r - c * r - Math.log(-1 + 1/p) - 2 * c * y0 + c * Math.sqrt(1/((c * c) * (x0 * x0)) * (-2 * c * ((-1 + c) * r + Math.log(-1 + 1/p)) * (x0 * x0 * x0) + (c * c) * (x0 * x0 * x0 * x0) + 2 * (-1 + c) * ((-1 + c) * r + Math.log(-1 + 1/p)) * x0 * x1 + Math.pow(-1 + c, 2) * (x1 * x1) + (x0 * x0) * ((r * r) - 2 * c * (r * r) + (c * c) * (r * r) - 2 * r * Math.log(-1 + 1/p) + 2 * c * r * Math.log(-1 + 1/p) + (Math.pow(Math.log(-1 + 1/p), 2)) + 4 * (-1 + c) * c * r * y0 - 4 * (-1 + c) * c * y1 + 2 * c * x1 - 2 * (c * c) * x1)))));
+	} //if
+
 	if (!this.buy(a, qty, outcome)) {
 	    if (LOG) System.out.println("COULDN'T BUY " + qty + " CONTRACTS! BUYING MAX POSSIBLE WITH BUDGET INSTEAD.");
 	    //Buy as much as possible with remaining budget. Specifically for binary outcome!
@@ -169,12 +173,17 @@ public class RepMM extends AMM {
      */    
     public double sellTillPrice(Agent a, int outcome, double price) {
 	double qty = 0, p = price;
-	double r = a.getRep(), x0 = state[outcome][0], x1 = state[outcome][1], c = CONTRACT_WEIGHT,
-	    y0 = state[outcome == 0 ? 1 : 0][0], y1 = state[outcome == 0 ? 1 : 0][1];
-	
-	qty = 1/(2 * c * y0) * (c * (y0 * y0) - (-1 + c) * y1 + y0 * (r - c * r - Math.log(-1 + 1/p) - 2 * c * x0 + c * Math.sqrt(1/((c * c) * (y0 * y0)) * (-2 * c * ((-1 + c) * r + Math.log(-1 + 1/p)) * (y0 * y0 * y0) + (c * c) * (y0 * y0 * y0 * y0) + 2 * (-1 + c) * ((-1 + c) * r + Math.log(-1 + 1/p)) * y0 * y1 + Math.pow(-1 + c, 2) * (y1 * y1) + (y0 * y0) * ((r * r) - 2 * c * (r * r) + (c * c) * (r * r) - 2 * r * Math.log(-1 + 1/p) + 2 * c * r * Math.log(-1 + 1/p) + (Math.pow(Math.log(-1 + 1/p), 2)) + 4 * (-1 + c) * c * r * x0 - 4 * (-1 + c) * c * x1 + 2 * c * y1 - 2 * (c * c) * y1)))));
-	if (qty < 0) return qty;
+	double r = a.getRep(), x0 = state[0][0], x1 = state[0][1], c = CONTRACT_WEIGHT,
+	    y0 = state[1][0], y1 = state[1][1];
 
+	
+	if (outcome == 0) {
+	    qty = 1/(2 * c * y0) * (c * (y0 * y0) - (-1 + c) * y1 + y0 * (r - c * r - Math.log(-1 + 1/p) - 2 * c * x0 + c * Math.sqrt(1/((c * c) * (y0 * y0)) * (-2 * c * ((-1 + c) * r + Math.log(-1 + 1/p)) * (y0 * y0 * y0) + (c * c) * (y0 * y0 * y0 * y0) + 2 * (-1 + c) * ((-1 + c) * r + Math.log(-1 + 1/p)) * y0 * y1 + Math.pow(-1 + c, 2) * (y1 * y1) + (y0 * y0) * ((r * r) - 2 * c * (r * r) + (c * c) * (r * r) - 2 * r * Math.log(-1 + 1/p) + 2 * c * r * Math.log(-1 + 1/p) + (Math.pow(Math.log(-1 + 1/p), 2)) + 4 * (-1 + c) * c * r * x0 - 4 * (-1 + c) * c * x1 + 2 * c * y1 - 2 * (c * c) * y1)))));
+	} else {
+	    qty = 1/(2 * c * x0) * (c * (x0 * x0) - (-1 + c) * x1 + x0 * (r - c * r - Math.log(-1 + 1/p) - 2 * c * y0 + c * Math.sqrt(1/((c * c) * (x0 * x0)) * (-2 * c * ((-1 + c) * r + Math.log(-1 + 1/p)) * (x0 * x0 * x0) + (c * c) * (x0 * x0 * x0 * x0) + 2 * (-1 + c) * ((-1 + c) * r + Math.log(-1 + 1/p)) * x0 * x1 + Math.pow(-1 + c, 2) * (x1 * x1) + (x0 * x0) * ((r * r) - 2 * c * (r * r) + (c * c) * (r * r) - 2 * r * Math.log(-1 + 1/p) + 2 * c * r * Math.log(-1 + 1/p) + (Math.pow(Math.log(-1 + 1/p), 2)) + 4 * (-1 + c) * c * r * y0 - 4 * (-1 + c) * c * y1 + 2 * c * x1 - 2 * (c * c) * x1)))));
+	} //if
+
+	if (qty < 0) return qty;
 	//if we don't have qty amount, sell all that we can
 	this.sell(a, Math.min(qty, a.getHolding(outcome)), outcome);
     
