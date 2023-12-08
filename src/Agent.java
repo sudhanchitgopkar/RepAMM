@@ -68,7 +68,7 @@ public class Agent {
 	this.opportunities = 0;
 	this.correctPreds = new ArrayList<Integer>();
 
-	this.rep = 0;
+	this.rep = calcRep();
 	this.belief = calcBelief(outcome);
 
 	this.budget = budget;
@@ -98,11 +98,14 @@ public class Agent {
        @return agent's reputation
     */
     private double calcRep() {
+	return rand.nextFloat();
+	/*
         if (participations == 0) return 0;
         double sig = sigmoid(Math.min(participations, LAST_N_MATCHES));
         int num_correct = correctPreds.subList(0,LAST_N_MATCHES)
                 .stream().mapToInt(Integer::intValue).sum();
         return sig * num_correct / Math.min(participations, LAST_N_MATCHES);
+	*/
     } //private
     
     /**

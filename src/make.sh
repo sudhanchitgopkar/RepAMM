@@ -1,4 +1,4 @@
-javac -d ../bin Agent.java AMM.java SRMM.java TradeFeeMM.java Sim.java Runner.java
+javac -d ../bin Agent.java AMM.java SRMM.java TradeFeeMM.java RepMM.java Sim.java Runner.java
 
 if [ $# == 1 ]; then
     cd ..
