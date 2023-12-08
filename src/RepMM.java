@@ -9,7 +9,7 @@ public class RepMM extends AMM {
     private double [][] state; //for ea. outcome, [<contracts sold>, <sum of holder reps>]
     private final double BETA = 1;
     private final boolean LOG = true;
-    private final double CONTRACT_WEIGHT = 0.5;
+    private final double CONTRACT_WEIGHT = 0.8;
     private final double REP_WEIGHT = 1 - CONTRACT_WEIGHT;
     /**
        Initializes a new RepMM with equal probability across all outcomes.
@@ -199,17 +199,21 @@ public class RepMM extends AMM {
        @return the quantity of contract `outcome` bought
      */    
     public double sellTillPrice(Agent a, int outcome, double price) {
-	double qty = 0;
+	double qty = 0, p = price;
+	double r = a.getRep(), x0 = state[outcome][0], x1 = state[outcome][1], c = CONTRACT_WEIGHT,
+	    y0 = state[outcome == 0 ? 1 : 0][0], y1 = state[outcome == 0 ? 1 : 0][1];
 	
-	for (int i = 0; i < state.length; i++) {
-	    if (i != outcome) {
-		qty += price * Math.exp(mktState(i)/BETA);
-	    } //if
-	} //for
+	double first2terms = x0 + (((-1 + c) * x1)/(2 * c * x0));
+	double sq1 = -4 * (-1 + c) * c * r * x0 + 4 * (-1 + c) * c * x1;
+	double sq2 = ((Math.pow(-1 + c, 2) * (x1 * x1))/(x0 * x0));
+	double sq3 = ((2 * (-1 + c) * x1 * (((-1 + c) * r + Math.log((-1 * p)/(-1 + p))) * y0 + c * (y0 * y0) - (-1 + c) * y1))/(x0 * y0));
+	double sq4 = ((Math.pow(((-1 + c) * r + Math.log((-1 * p)/(-1 + p))) * y0 + c * (y0 * y0) - (-1 + c) * y1, 2))/(y0 * y0));
+	double sqcoeff = -1 * r * y0 + c * r * y0 + Math.log((-1 * p)/(-1 + p)) * y0 + c * (y0 * y0) + y1 - c * y1 + c * y0;
+	double denom = 2 * c * y0;
+	double sqrt = ((sq1 + sq2 - sq3 + sq4)/(c * c));
 
-	qty /= (1 - price);
-	qty = mktState(outcome) - qty;
-	
+	qty = first2terms - ((sqcoeff * Math.sqrt(sqrt))/(denom));
+
 	if (qty < 0) return qty;
 
 	//if we don't have qty amount, sell all that we can
