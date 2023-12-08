@@ -147,7 +147,7 @@ public class RepMM extends AMM {
         } else {
             qty = 1/(2 * c * x0) * (c * (x0 * x0) - (-1 + c) * x1 + x0 * (r - c * r - Math.log(-1 + 1/p) - 2 * c * y0 + c * Math.sqrt(1/((c * c) * (x0 * x0)) * (-2 * c * ((-1 + c) * r + Math.log(-1 + 1/p)) * (x0 * x0 * x0) + (c * c) * (x0 * x0 * x0 * x0) + 2 * (-1 + c) * ((-1 + c) * r + Math.log(-1 + 1/p)) * x0 * x1 + Math.pow(-1 + c, 2) * (x1 * x1) + (x0 * x0) * ((r * r) - 2 * c * (r * r) + (c * c) * (r * r) - 2 * r * Math.log(-1 + 1/p) + 2 * c * r * Math.log(-1 + 1/p) + (Math.pow(Math.log(-1 + 1/p), 2)) + 4 * (-1 + c) * c * r * y0 - 4 * (-1 + c) * c * y1 + 2 * c * x1 - 2 * (c * c) * x1)))));
         } //if
-
+	
         if (!this.buy(a, qty, outcome)) {
             if (LOG) System.out.println("COULDN'T BUY " + qty + " CONTRACTS! BUYING MAX POSSIBLE WITH BUDGET INSTEAD.");
             //Buy as much as possible with remaining budget. Specifically for binary outcome!
@@ -162,6 +162,42 @@ public class RepMM extends AMM {
 
         return qty;
     } //buyTillPrice
+    
+
+    private double searchQty(Agent a, int outcome, double price) {
+	double THRESH = 0.01, qty = 0;
+	int l = 0, r = (int) Math.floor(a.getHolding(outcome));
+
+	while(l <= r) {
+	    int m = l + (r - l)/2;
+
+	    double res = getFakePrice(outcome, a, m);
+	    if (Math.abs(price - res) < THRESH) return res;
+
+	    if (price < res) l = ++m;
+	    else r = --m;
+	} //while
+	
+	return qty;
+    } //searchQty
+
+    private double fakeState(int outcome, Agent a, double amt) {
+	double x0 = state[outcome][0], x1 = state[outcome][1];//, y0 = state[outcome == 0 ? 1 : 0][0], y1 = state[outcome == 0 ? 1 : 0][1];
+	x0 -= amt;
+	x1 -= a.getRep() * amt;
+	return CONTRACT_WEIGHT * (x0) - (REP_WEIGHT) * (x1/x0);
+    } //fakeSell
+
+    public double getFakePrice(int outcome, Agent a, double amt) {
+        double price = Math.exp(fakeState(outcome, a, amt)/BETA);
+        double sum = 0;
+	
+        for (int i = 0; i < state.length; i++) {
+	    if (outcome != i) sum += Math.exp(mktState(i)/BETA);
+        } //for
+
+        return price/(price + sum);
+    } //getPrice
 
     /**
      Returns the quantity of contract `outcome` bought by agent a till its price becomes `price`.
@@ -182,10 +218,9 @@ public class RepMM extends AMM {
         } else {
             qty = 1/(2 * c * x0) * (c * (x0 * x0) - (-1 + c) * x1 + x0 * (r - c * r - Math.log(-1 + 1/p) - 2 * c * y0 + c * Math.sqrt(1/((c * c) * (x0 * x0)) * (-2 * c * ((-1 + c) * r + Math.log(-1 + 1/p)) * (x0 * x0 * x0) + (c * c) * (x0 * x0 * x0 * x0) + 2 * (-1 + c) * ((-1 + c) * r + Math.log(-1 + 1/p)) * x0 * x1 + Math.pow(-1 + c, 2) * (x1 * x1) + (x0 * x0) * ((r * r) - 2 * c * (r * r) + (c * c) * (r * r) - 2 * r * Math.log(-1 + 1/p) + 2 * c * r * Math.log(-1 + 1/p) + (Math.pow(Math.log(-1 + 1/p), 2)) + 4 * (-1 + c) * c * r * y0 - 4 * (-1 + c) * c * y1 + 2 * c * x1 - 2 * (c * c) * x1)))));
         } //if
-
-        //if (qty < 0) return qty;
-        //if we don't have qty amount, sell all that we can
-        this.sell(a, Math.min(qty, a.getHolding(outcome)), outcome);
+	
+	this.sell(a, searchQty(a, outcome, price), outcome);
+	//else this.sell(a, Math.min(qty, a.getHolding(outcome)), outcome);
 
         return qty;
     } //sellTillPrice
