@@ -145,7 +145,7 @@ public class SRMM extends mm.AMM {
 	    double x = Math.exp((price/BETA) + (state[outcome]/BETA));
 	    double y = Math.exp((price/BETA) + (state[outcome == 0 ? 1 : 0]/BETA));
 	    double z = Math.exp(state[outcome == 0 ? 1 : 0]/BETA);
-	    qty = BETA * Math.log(x + y + z) - state[outcome];
+	    qty = 0.85 * BETA * Math.log(x + y + z) - state[outcome];
 	    if (!this.buy(a, qty, outcome)) {
 		throw new Exception("BUY TILL PRICE FALLBACK ERROR, TRIED TO BUY " + qty + " CONTRACTS");
 	    } //if

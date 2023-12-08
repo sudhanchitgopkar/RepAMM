@@ -17,7 +17,7 @@ public class Sim {
     private final int NUM_OUTCOMES = 2;
     private final int OUTCOME = rand.nextInt(2); //returns int 0 or 1
     private final int N = 2; //number of agents
-    private final int ROUNDS = 2;
+    private final int ROUNDS = 3;
     private final boolean LOG = true;
 
     private AMM amm;
@@ -165,6 +165,7 @@ public class Sim {
 				METADATA_IO.write(10);
 				METADATA_IO.write(("Market Maker: " + amm.get_MM_type()).getBytes());
 				METADATA_IO.write(10);
+				METADATA_IO.write(("Outcome: " + String.valueOf(OUTCOME)).getBytes());
 				METADATA_IO.close();
 
 				PRICE_HISTORY_IO.write("Contract_0,Contract_1".getBytes());
